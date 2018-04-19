@@ -43,6 +43,7 @@ class Ecdh(object):
 
     def do_ECDHshare(self, server_ECDH_pub, priKey=None):
         OUTLEN = 16
+        EcdhShareKey = b''
         server_ECDH = server_ECDH_pub
         # EC_KEY *EC_KEY_new_by_curve_name(int nid)
         server_ec = OpenSSL.EC_KEY_new_by_curve_name(self.curveID)
@@ -79,18 +80,25 @@ class Ecdh(object):
         # KDF = CFUNCTYPE(c_void_p,  # return type
         #                 c_void_p, c_size_t, c_void_p, POINTER(c_size_t))
 
-        KDF = WINFUNCTYPE(c_void_p,  # return type
-                        c_void_p, c_size_t, c_void_p, POINTER(c_size_t))
+        KDF = CFUNCTYPE(c_void_p,  # return type
+                        c_void_p, c_size_t, POINTER(c_char), POINTER(c_size_t))
+                        # c_void_p, c_size_t, c_void_p, POINTER(c_size_t))
         @KDF
         def mykdf(_in, _inlen, out, outlen):
-            nonlocal OUTLEN
+            nonlocal OUTLEN, EcdhShareKey
             data = ctypes.string_at(_in, size=_inlen)
             md5 = hashlib.md5()
             md5.update(data)
-            print(md5.digest())
-            outlen.contents = c_size_t(OUTLEN)
-            ctypes.memset(outlen, c_size_t(OUTLEN))
-            outlen = POINTER(c_int(len(out)))
+            outdata = md5.digest()
+            EcdhShareKey = outdata
+            if len(outdata) == OUTLEN:
+                outlen.contents = c_size_t(OUTLEN)
+                data = ctypes.cast(data, ctypes.POINTER(ctypes.c_char))
+                out.contents  = data.contents
+                # out.contents = outdata
+                # ctypes.memset(byref(out), data, sizeof(c_char * OUTLEN))
+            # ctypes.memset(outlen, c_size_t(OUTLEN), sizeof(c_size_t))
+            # outlen = POINTER(c_int(len(out)))
             return out
         # int ECDH_compute_key(void *out, size_t outlen,
         #           const EC_POINT pub_key, EC_KEY ecdh,
@@ -116,8 +124,9 @@ class Ecdh(object):
         result = ECDH_compute_key(ShareKey_p, outlen, server_ECpoint, pri_ec,
                                   mykdf)
         OpenSSL.EC_KEY_free(server_ec), OpenSSL.EC_KEY_free(pri_ec)
-        if result == OUTLEN:
-            EcdhShareKey = ShareKey_buf[:OUTLEN]
+        if len(EcdhShareKey) == OUTLEN:
+            # EcdhShareKey = ShareKey_buf[:OUTLEN]
+            return EcdhShareKey
         else:
             return None
 
@@ -145,4 +154,5 @@ if __name__ == '__main__':
         len(pub) == len(EcdhPubKey) and type(pub) == type(EcdhPubKey)), 'generate key_pair failed'
 
     shared = ec.do_ECDHshare(ServerEcdhPubKey, EcdhPriKey)  # FAILED
+    print(len(shared), shared)
     assert len(shared) == len(EcdhShareKey) and type(shared) == type(EcdhShareKey), 'ecdh failed'
