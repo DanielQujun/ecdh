@@ -22,7 +22,8 @@ def getlib():
         file_name = 'libcrypto.so.1.0.0'
     path = os.path.join(os.path.dirname(__file__), file_name)
     if not os.path.exists(path):
-        path = ctypes.util.find_library('crypto')
+        lib_name = 'libeay32' if 'MSC' in sys_version else 'crypto'
+        path = ctypes.util.find_library(lib_name)
     return path
 
 class CipherName:
