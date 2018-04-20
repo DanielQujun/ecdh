@@ -9,18 +9,20 @@ import os
 OpenSSL = None
 
 def getlib():
+    # openssl-1.0.2o.tar.gz
+    # Windows: libeay32.dll   http://slproweb.com/products/Win32OpenSSL.html
+    # Linux: libcrypto.so.*   https://www.openssl.org/source/     $./config -fPIC shared & make
+    # MacOS:                                                      $ ./Configure darwin64-x86_64-cc --shared & make
     sys_version = sys.version
     if 'MSC' in sys_version:  # '3.6.2 (v3.6.2:5fd33b5, Jul  8 2017, 04:57:36) [MSC v.1900 64 bit (AMD64)]'
         file_name = 'libeay32_64.dll' if 'AMD64' in sys_version else 'libeay32.dll'
-        lib_name = 'crypto'
-    elif 'GCC ' in sys_version:  # '3.5.2 (default, Nov 23 2017, 16:37:01) \n[GCC 5.4.0 20160609]'
-        file_name = 'libcrypto_linux64.a'
-        lib_name = 'crypto'
-    else:  # TODO MacOS
-        pass
+    elif 'darwin' in sys_version: # '2.7.10 (default, Oct 6 2017, 22:29:07) \n[GCC 4.2.1 Compatible Apple LLVM 9.0.0 (clang-900.0.31)]'
+        file_name = 'libcrypto.1.0.0.dylib'
+    elif 'GCC' in sys_version:  # '3.5.2 (default, Nov 23 2017, 16:37:01) \n[GCC 5.4.0 20160609]'
+        file_name = 'libcrypto.so.1.0.0'
     path = os.path.join(os.path.dirname(__file__), file_name)
     if not os.path.exists(path):
-        path = ctypes.util.find_library(lib_name)
+        path = ctypes.util.find_library('crypto')
     return path
 
 class CipherName:
