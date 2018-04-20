@@ -1,19 +1,9 @@
-// ecdh.cpp : 定义 DLL 应用程序的导出函数。
-//
 
-#include "stdafx.h"
-#include "openssl/aes.h"
-#include "openssl/rsa.h"
-#include "openssl/ec.h"
-#include "openssl/ecdh.h"
-#include "openssl/md5.h"
-
-extern "C" bool GenEcdh(int nid, unsigned char *szPriKey, int *pLenPri, unsigned char *szPubKey, int *pLenPub);
-extern "C" bool DoEcdh(int nid, unsigned char * szServerPubKey, int nLenServerPub, unsigned char * szLocalPriKey, int nLenLocalPri, unsigned char * szShareKey, int *pLenShareKey);
+#include "ecdh.h"
 
 #define MD5_DIGEST_LENGTH 16
 
-extern "C" bool GenEcdh(int nid, unsigned char *szPriKey, int *pLenPri, unsigned char *szPubKey, int *pLenPub)
+bool GenEcdh(int nid, unsigned char *szPriKey, int *pLenPri, unsigned char *szPubKey, int *pLenPub)
 {
 	if (!szPriKey || !pLenPri || !szPubKey || !pLenPub)		return FALSE;
 	
@@ -82,7 +72,7 @@ void *KDF_MD5(const void *in, size_t inlen, void *out, size_t *outlen)
 	return out;
 }
 
-extern "C" bool DoEcdh(int nid, unsigned char * szServerPubKey, int nLenServerPub, unsigned char * szLocalPriKey, int nLenLocalPri, unsigned char * szShareKey, int *pLenShareKey)
+bool DoEcdh(int nid, unsigned char * szServerPubKey, int nLenServerPub, unsigned char * szLocalPriKey, int nLenLocalPri, unsigned char * szShareKey, int *pLenShareKey)
 {
 	const unsigned char *public_material = (const unsigned char *)szServerPubKey;
 	const unsigned char *private_material = (const unsigned char *)szLocalPriKey;

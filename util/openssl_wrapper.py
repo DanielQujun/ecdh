@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+# https://blog.csdn.net/eofguo/article/details/51191368
+
 import sys
 import ctypes
 from ctypes import *
