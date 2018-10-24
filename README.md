@@ -1,6 +1,6 @@
 # ecdh, just for learn
 
-Well, I made this project because find a python ecdh package is unbelievably hard:
+Well, I made this project because it is unbelievably hard to find a python ecdh package that get an ecdh key from priKey&pubKey:
 
 - https://github.com/pyca/cryptography/issues/4190    can't
 - https://github.com/vbwagner/ctypescrypto    can't
